@@ -1,52 +1,74 @@
-import { request } from "http";
+
 
 import { test, expect } from "@playwright/test";
 
-test.describe("API Tests", () => {
-    test("GET request", async ({ request }) => {
-        const response = await request.get("https://jsonplaceholder.typicode.com/posts");
+test('API GET', async ({ request }) => {
+    const response = await request.get("https://reqres.in/api/users?page=2")
         expect(response.status()).toBe(200);
-        const data = await response.json();
-        expect(data.length).toBeGreaterThan(0);
+        expect(response.ok()).toBeTruthy();
+        const responseBody = await response.json();
+        expect(responseBody).toHaveProperty('page', 2);
+        expect(responseBody).toHaveProperty('per_page', 6);
+        expect(responseBody).toHaveProperty('data[0].first_name', 'Michael');
+        const text = await response.text();
+        expect(text).toContain('Michael');
+        console.log(text);
+        console.log(responseBody);
     });
-    
-    test("POST request", async ({ request }) => {
-        const response = await request.post("https://jsonplaceholder.typicode.com/posts", {
+
+test('API POST', async ({ request }) => {
+
+    const response = await request.post("https://reqres.in/api/users", {
         data: {
-            title: "foo",
-            body: "bar",
-            userId: 1,
+            name: "morpheus",
+            job: "leader"
         },
-        });
-        expect(response.status()).toBe(201);
-        const data = await response.json();
-        expect(data.title).toBe("foo");
+        headers: {
+            "Content-Type": "application/json",
+            "x-api-key": "reqres-free-v1"
+        }
     });
-    })
-    test("PUT request", async ({ request }) => {
-        const response = await request.put("https://jsonplaceholder.typicode.com/posts/1", {
-            data: {
-                id: 1,
-                title: "foo",
-                body: "bar",
-                userId: 1,
-            },
-        });
-        expect(response.status()).toBe(200);
-        const data = await response.json();
-        expect(data.title).toBe("foo");
+
+    expect(response.status()).toBe(201);
+    expect(response.ok()).toBeTruthy();
+    const responseBody = await response.json();
+    expect(responseBody).toHaveProperty('name', 'morpheus');
+    expect(responseBody).toHaveProperty('job', 'leader');
+    console.log(responseBody);
+}
+);
+
+test('API PUT', async ({ request }) => {
+    const response = await request.put("https://reqres.in/api/users/2", {
+        data: {
+            name: "morpheus",
+            job: "zion resident"
+        },
+        headers: {
+            "Content-Type": "application/json",
+            "x-api-key": "reqres-free-v1"
+        }
     });
-    test("DELETE request", async ({ request }) => {
-        const response = await request.delete("https://jsonplaceholder.typicode.com/posts/1");
-        expect(response.status()).toBe(200);
+
+    expect(response.status()).toBe(200);
+    expect(response.ok()).toBeTruthy();
+    const responseBody = await response.json();
+    expect(responseBody).toHaveProperty('name', 'morpheus');
+    expect(responseBody).toHaveProperty('job', 'zion resident');
+    console.log(responseBody);
+}
+);  
+
+test('API DELETE', async ({ request }) => { 
+    const response = await request.delete("https://reqres.in/api/users/2", {
+        headers: {
+            "Content-Type": "application/json",
+            "x-api-key": "reqres-free-v1"
+        }
     });
-    test("PATCH request", async ({ request }) => {
-        const response = await request.patch("https://jsonplaceholder.typicode.com/posts/1", {
-            data: {
-                title: "foo",
-            },
-        });
-        expect(response.status()).toBe(200);
-        const data = await response.json();
-        expect(data.title).toBe("foo");
-    }); 
+
+    expect(response.status()).toBe(204);
+    expect(response.ok()).toBeTruthy();
+    
+}
+);
